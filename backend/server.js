@@ -5,6 +5,7 @@ require("dotenv").config();
 const db = require("./config/db");
 
 const app = express();
+const authenticationRoutes = require("./routes/authRoutes")
 
 app.use(cors());
 app.use(express.json());
@@ -35,7 +36,7 @@ app.get("/api/health", async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-
+app.use("/api/auth", authenticationRoutes)
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
