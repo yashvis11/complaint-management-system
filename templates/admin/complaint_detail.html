@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}Complaint #{{ complaint.id }}{% endblock %}
+{% block content %}
+<a href="{{ url_for('admin.list_complaints') }}" class="btn btn-sm btn-link ps-0">&larr; Back to all complaints</a>
+
+<div class="card mb-4">
+  <div class="card-body">
+    <h4>{{ complaint.title }} <span class="text-muted">#{{ complaint.id }}</span></h4>
+    <p>{{ complaint.description }}</p>
+    <p class="mb-1"><strong>Category:</strong> {{ complaint.category }}</p>
+    <p class="mb-1"><strong>Priority:</strong> {{ complaint.priority }}</p>
+    <p class="mb-1"><strong>Submitted by:</strong> {{ complaint.user.name if complaint.user else "—" }}</p>
+    <p class="mb-1"><strong>Created:</strong> {{ complaint.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+    <p class="mb-1"><strong>Current Status:</strong>
+      <span class="badge bg-{{ 'secondary' if complaint.status == 'Pending' else 'info' if complaint.status == 'In Progress' else 'success' if complaint.status == 'Resolved' else 'danger' }}">
+        {{ complaint.status }}
+      </span>
+    </p>
+    <p class="mb-0"><strong>Assigned to:</strong> {{ complaint.assignee.name if complaint.assignee else "Unassigned" }}</p>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-6">
+    <div class="card mb-4">
+      <div class="card-header">Update Status / Add Remarks</div>
+      <div class="card-body">
+        <form method="POST" action="{{ url_for('admin.update_status', complaint_id=complaint.id) }}">
+          <div class="mb-3">
+            <label class="form-label">New Status</label>
+            <select name="status" class="form-select">
+              {% for s in statuses %}
+              <option value="{{ s }}" {% if complaint.status == s %}selected{% endif %}>{{ s }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Remarks</label>
+            <textarea name="remarks" class="form-control" rows="3" placeholder="Optional note for this update"></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary">Save Update</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="card mb-4">
+      <div class="card-header">Assign Complaint (optional)</div>
+      <div class="card-body">
+        <form method="POST" action="{{ url_for('admin.assign_complaint', complaint_id=complaint.id) }}">
+          <div class="mb-3">
+            <select name="assigned_to" class="form-select">
+              <option value="">Unassigned</option>
+              {% for a in admins %}
+              <option value="{{ a.id }}" {% if complaint.assigned_to == a.id %}selected{% endif %}>{{ a.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <button type="submit" class="btn btn-outline-primary">Save Assignment</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">Status History</div>
+  <ul class="list-group list-group-flush">
+    {% for u in complaint.updates %}
+    <li class="list-group-item">
+      <strong>{{ u.status }}</strong> — by {{ u.admin.name if u.admin else "—" }}
+      on {{ u.updated_at.strftime('%Y-%m-%d %H:%M') }}
+      {% if u.remarks %}<div class="text-muted">{{ u.remarks }}</div>{% endif %}
+    </li>
+    {% else %}
+    <li class="list-group-item text-muted">No status changes yet.</li>
+    {% endfor %}
+  </ul>
+</div>
+{% endblock %}

@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}All Complaints{% endblock %}
+{% block content %}
+<h3 class="mb-4">All Complaints</h3>
+
+<form method="GET" class="row g-2 mb-4">
+  <div class="col-md-3">
+    <input type="text" name="q" class="form-control" placeholder="Search title/description"
+           value="{{ filters.q }}">
+  </div>
+  <div class="col-md-2">
+    <select name="status" class="form-select">
+      <option value="">All statuses</option>
+      {% for s in statuses %}
+      <option value="{{ s }}" {% if filters.status == s %}selected{% endif %}>{{ s }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-md-2">
+    <select name="category" class="form-select">
+      <option value="">All categories</option>
+      {% for cat in categories %}
+      <option value="{{ cat }}" {% if filters.category == cat %}selected{% endif %}>{{ cat }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-md-2">
+    <select name="priority" class="form-select">
+      <option value="">All priorities</option>
+      {% for p in ["Low", "Medium", "High"] %}
+      <option value="{{ p }}" {% if filters.priority == p %}selected{% endif %}>{{ p }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-md-2">
+    <button class="btn btn-primary w-100" type="submit">Filter</button>
+  </div>
+</form>
+
+<table class="table table-bordered bg-white align-middle">
+  <thead>
+    <tr>
+      <th>ID</th><th>Title</th><th>Submitted By</th><th>Category</th>
+      <th>Priority</th><th>Status</th><th>Created</th><th></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for c in complaints %}
+    <tr>
+      <td>#{{ c.id }}</td>
+      <td>{{ c.title }}</td>
+      <td>{{ c.user.name if c.user else "—" }}</td>
+      <td>{{ c.category }}</td>
+      <td>
+        <span class="badge bg-{{ 'danger' if c.priority == 'High' else 'warning' if c.priority == 'Medium' else 'secondary' }}">
+          {{ c.priority }}
+        </span>
+      </td>
+      <td>
+        <span class="badge bg-{{ 'secondary' if c.status == 'Pending' else 'info' if c.status == 'In Progress' else 'success' if c.status == 'Resolved' else 'danger' }}">
+          {{ c.status }}
+        </span>
+      </td>
+      <td>{{ c.created_at.strftime('%Y-%m-%d') }}</td>
+      <td><a href="{{ url_for('admin.complaint_detail', complaint_id=c.id) }}" class="btn btn-sm btn-outline-primary">Manage</a></td>
+    </tr>
+    {% else %}
+    <tr><td colspan="8" class="text-center text-muted">No complaints found.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% if pagination.pages > 1 %}
+<nav>
+  <ul class="pagination">
+    {% for p in range(1, pagination.pages + 1) %}
+    <li class="page-item {% if p == pagination.page %}active{% endif %}">
+      <a class="page-link" href="{{ url_for('admin.list_complaints', page=p, **filters) }}">{{ p }}</a>
+    </li>
+    {% endfor %}
+  </ul>
+</nav>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard{% endblock %}
+{% block content %}
+<h3 class="mb-4">Dashboard</h3>
+
+<div class="row g-3 mb-4">
+  {% for label, count in stats.items() %}
+  <div class="col-6 col-md-2">
+    <div class="card shadow-sm text-center">
+      <div class="card-body">
+        <div class="fs-3 fw-bold">{{ count }}</div>
+        <div class="text-muted small">{{ label }}</div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<h5>Recent Complaints</h5>
+<table class="table table-bordered bg-white">
+  <thead>
+    <tr>
+      <th>ID</th><th>Title</th><th>Category</th><th>Priority</th><th>Status</th><th></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for c in recent %}
+    <tr>
+      <td>#{{ c.id }}</td>
+      <td>{{ c.title }}</td>
+      <td>{{ c.category }}</td>
+      <td>{{ c.priority }}</td>
+      <td>{{ c.status }}</td>
+      <td><a href="{{ url_for('admin.complaint_detail', complaint_id=c.id) }}" class="btn btn-sm btn-outline-primary">View</a></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
