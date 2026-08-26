@@ -1,0 +1,25 @@
+version: "3.9"
+
+services:
+  web:
+    build: .
+    container_name: cms_web
+    ports:
+      - "5000:5000"
+    environment:
+      - SECRET_KEY=change-this-in-production
+      - DATABASE_PATH=/app/data/complaints.db
+      - UPLOAD_FOLDER=/app/data/uploads
+    volumes:
+      # Persist the SQLite database and uploaded attachments outside the container
+      - db_data:/app/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/login')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  db_data:
