@@ -1,23 +1,13 @@
-FROM python:3.12-slim
+# Root Dockerfile for Complaint Management System Backend
+FROM node:20-alpine
 
 WORKDIR /app
 
-# Install dependencies first (better layer caching)
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+COPY backend/package*.json ./
+RUN npm install --production
 
-# Copy application code
-COPY . .
+COPY backend/ ./
 
-# Directories for the SQLite database and uploaded attachments
-# (mounted as a volume in docker-compose so data survives restarts)
-RUN mkdir -p /app/data/uploads
+EXPOSE 3000
 
-ENV DATABASE_PATH=/app/data/complaints.db
-ENV UPLOAD_FOLDER=/app/data/uploads
-ENV SECRET_KEY=change-this-in-production
-ENV FLASK_APP=app.py
-
-EXPOSE 5000
-
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "3", "--timeout", "60", "app:app"]
+CMD ["npm", "start"]

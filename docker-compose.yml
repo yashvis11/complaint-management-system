@@ -1,8 +1,8 @@
-
-
 services:
   backend:
     build: ./backend
+    container_name: complaint_backend
+    restart: unless-stopped
     ports:
       - "3000:3000"
     environment:
@@ -12,11 +12,15 @@ services:
       DB_USER: root
       DB_PASSWORD: rootpassword
       DB_NAME: complaint_system
+      SESSION_SECRET: complaint_session_secret_key_2026
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy
 
   mysql:
     image: mysql:8.0
+    container_name: complaint_mysql
+    restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: rootpassword
       MYSQL_DATABASE: complaint_system
@@ -25,6 +29,11 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql
       - ./database/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
 volumes:
   mysql_data:

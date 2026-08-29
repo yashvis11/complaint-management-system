@@ -1,282 +1,171 @@
-# ComplaintDesk — Complaint Management System
+# Complaint Management System
 
-A full-stack complaint management system with role-based access, a live dashboard with charts, file attachments, in-app notifications, CSV/PDF reporting, dark mode, and a fully Dockerized deployment.
-
-Built with **Flask + SQLite + Bootstrap 5**.
-
-![Status](https://img.shields.io/badge/status-working-brightgreen) ![Python](https://img.shields.io/badge/python-3.12-blue) ![License](https://img.shields.io/badge/license-MIT-lightgrey)
+A web-based Complaint Management System developed with **HTML5, CSS3, Bootstrap 5, JavaScript**, powered by a **Node.js (Express.js)** REST API, backed by **MySQL 8.0**, and containerized using **Docker & Docker Compose**.
 
 ---
 
-## ✨ Features
+## 👥 Team Roles & Responsibilities
 
-### Authentication & User Management
-- Registration and login/logout with session-based auth
-- Passwords hashed with Werkzeug (PBKDF2-SHA256) — never stored in plaintext
-- Role-based access control (`user` / `admin`)
-- Editable profile page with a personal stats summary
-
-### Complaint Management
-- Create, edit (only while `Pending`), delete, and view complaints
-- Category + priority (Low/Medium/High) tagging
-- **File/image attachments** (png, jpg, jpeg, gif, pdf, docx, txt — up to 8 MB), access-controlled per user
-- Full status **history/audit trail** per complaint
-
-### Admin Panel
-- View all complaints system-wide
-- Search by keyword, filter by status, category, and priority
-- Change status (Pending → In Progress → Resolved/Rejected) with a remark on every change
-- **Assign complaints** to a specific admin
-- CSV and **PDF report export**
-
-### Dashboard & Reports
-- Live stat cards (total, pending, in progress, resolved, rejected)
-- Interactive charts (status breakdown + complaints by category) via Chart.js
-- Admin-only insight cards: open high-priority complaints, unassigned open complaints
-- **Pagination** on the complaints list (8 per page)
-- **Dark mode** toggle, persisted per-browser
-
-### Notifications
-- In-app notification bell with unread badge
-- Users are notified when their complaint's status changes
-- Admins are notified when a new complaint comes in
-
-### Containerization
-- `Dockerfile` (Gunicorn-based production server)
-- `docker-compose.yml` with a persistent named volume for the SQLite DB + uploaded files, plus a healthcheck
+| Role | Member Responsibilities | Key Features / Artifacts |
+| :--- | :--- | :--- |
+| **Member 1** | **Authentication & User Management** | User registration, login/logout, role-based access (User/Admin), password hashing (bcrypt), profile page. |
+| **Member 2** | **Complaint Management** | Create complaint, edit (before review), delete, complaint history, category & priority assignment. |
+| **Member 3** | **Admin Panel & Status Tracking** | View all complaints, assign complaints, status updates (Pending, In Progress, Resolved, Rejected), admin remarks, search & filter. |
+| **Member 4** | **Dashboard, Reports & Docker** *(This Module)* | KPI statistics, Chart.js visualizations, CSV/PDF reports export, Docker containerization, `docker-compose.yml`, MySQL container setup, repository & documentation. |
 
 ---
 
-## 🧱 Tech Stack
+## 🛠️ Technology Stack
 
-| Layer            | Technology                                    |
-|-------------------|------------------------------------------------|
-| Frontend          | HTML5, CSS3 (custom design system + dark mode), Bootstrap 5, Chart.js, vanilla JS |
-| Backend            | Python 3 / Flask                               |
-| Database           | SQLite                                         |
-| Auth               | Flask sessions + Werkzeug password hashing     |
-| Reports            | `csv` (built-in) + ReportLab (PDF)             |
-| Containerization   | Docker, Docker Compose                         |
-| WSGI server (prod) | Gunicorn                                       |
+- **Frontend**: HTML5, CSS3, Bootstrap 5, FontAwesome 6, Chart.js (v4)
+- **Backend**: Node.js, Express.js (`express`, `cors`, `dotenv`, `express-session`, `bcrypt`, `mysql2`)
+- **Database**: MySQL 8.0
+- **Containerization**: Docker, Docker Compose
 
 ---
 
-## 📁 Project Structure
+## 📂 Project Structure
 
 ```
 complaint-management-system/
-├── app.py                     # Flask app: routes, models, business logic
-├── requirements.txt
-├── Dockerfile
-├── docker-compose.yml
-├── .gitignore
-├── static/
-│   └── css/style.css          # Design system (light + dark theme via CSS variables)
-└── templates/
-    ├── base.html              # Shared layout, navbar, notification bell, theme toggle
-    ├── landing.html           # Marketing landing page (logged-out visitors)
-    ├── login.html
-    ├── register.html
-    ├── profile.html
-    ├── dashboard.html         # Stats + Chart.js graphs
-    ├── complaints_list.html   # Search / filter / pagination
-    ├── complaint_form.html    # Create / edit, with file upload
-    ├── complaint_detail.html  # History, attachment, admin status/assignment form
-    └── 404.html
+├── Dockerfile                  # Root Dockerfile for backend container
+├── docker-compose.yml          # Docker Compose (Node.js Backend + MySQL 8.0)
+├── .dockerignore               # Files ignored during Docker build
+├── README.md                   # Complete documentation and setup guide
+│
+├── backend/
+│   ├── Dockerfile              # Backend-specific Dockerfile
+│   ├── .dockerignore
+│   ├── .env.example            # Sample environment variables
+│   ├── package.json            # Node.js dependencies and scripts
+│   ├── server.js               # Express application entry point
+│   ├── config/
+│   │   └── db.js               # MySQL connection pool configuration
+│   ├── controllers/
+│   │   ├── authController.js        # Member 1
+│   │   ├── complaintController.js   # Member 2
+│   │   ├── adminController.js       # Member 3
+│   │   └── dashboardController.js   # Member 4 (Stats, Charts, CSV/PDF Export)
+│   ├── routes/
+│   │   ├── authRoutes.js
+│   │   ├── complaintRoutes.js
+│   │   ├── adminRoutes.js
+│   │   └── dashboardRoutes.js       # Member 4 API Routes
+│   └── middleware/
+│
+├── database/
+│   └── schema.sql              # Database schema and seed data
+│
+└── frontend/
+    ├── css/
+    │   └── style.css           # Custom styles, card designs, print CSS
+    ├── js/
+    │   ├── auth.js
+    │   ├── complaints.js
+    │   ├── admin.js
+    │   └── dashboard.js        # Member 4 Chart.js & export logic
+    └── pages/
+        ├── dashboard.html      # Member 4 Analytics & Reports Dashboard
+        ├── login.html
+        ├── register.html
+        ├── profile.html
+        ├── complaints.html
+        ├── create-complaint.html
+        ├── edit-complaint.html
+        ├── complaint-details.html
+        └── admin.html
 ```
 
 ---
 
-## 🗄️ Database Schema
+## 🚀 Quick Start with Docker (Recommended)
 
-**users**
-| column | type | notes |
-|---|---|---|
-| id | INTEGER PK | |
-| name | TEXT | |
-| email | TEXT | unique |
-| password | TEXT | hashed |
-| role | TEXT | `user` or `admin` |
-| created_at | TEXT | ISO 8601 |
+Run the entire application (Node.js backend + MySQL database + auto-seeded tables) with a single command.
 
-**complaints**
-| column | type | notes |
-|---|---|---|
-| id | INTEGER PK | |
-| user_id | INTEGER FK → users.id | |
-| title | TEXT | |
-| description | TEXT | |
-| category | TEXT | |
-| priority | TEXT | Low / Medium / High |
-| status | TEXT | Pending / In Progress / Resolved / Rejected |
-| attachment | TEXT | stored filename, nullable |
-| assigned_to | INTEGER FK → users.id | nullable, admin only |
-| created_at | TEXT | |
-| updated_at | TEXT | |
+### Prerequisites
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running.
 
-**complaint_updates**
-| column | type | notes |
-|---|---|---|
-| id | INTEGER PK | |
-| complaint_id | INTEGER FK → complaints.id | |
-| updated_by | INTEGER FK → users.id | |
-| status | TEXT | status at time of update |
-| remarks | TEXT | admin remark, nullable |
-| updated_at | TEXT | |
-
-**notifications**
-| column | type | notes |
-|---|---|---|
-| id | INTEGER PK | |
-| user_id | INTEGER FK → users.id | |
-| message | TEXT | |
-| link | TEXT | nullable |
-| is_read | INTEGER | 0/1 |
-| created_at | TEXT | |
-
-All tables (and a lightweight column migration for `attachment`/`assigned_to`) are created automatically on first run — no manual migration step needed.
-
----
-
-## 🚀 Getting Started
-
-### Option 1 — Docker (recommended)
-
-Requires Docker + Docker Compose.
-
+### 1. Clone the repository
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/yashvis11/complaint-management-system.git
 cd complaint-management-system
+```
+
+### 2. Start containers with Docker Compose
+```bash
 docker compose up --build
 ```
 
-App: **http://localhost:5000**
+### 3. Access the Application
+- **Dashboard & Frontend UI**: [http://localhost:3000](http://localhost:3000) or [http://localhost:3000/pages/dashboard.html](http://localhost:3000/pages/dashboard.html)
+- **Backend API Health**: [http://localhost:3000/api/health](http://localhost:3000/api/health)
+- **MySQL Database**: `localhost:3306` (`user: root`, `password: rootpassword`, `database: complaint_system`)
 
+To stop the containers:
 ```bash
-docker compose down          # stop
-docker compose down -v       # stop and wipe the database/uploads volume
+docker compose down
 ```
-
-### Option 2 — Local Python
-
-Requires Python 3.10+.
-
-```bash
-git clone <your-repo-url>
-cd complaint-management-system
-
-python3 -m venv venv
-source venv/bin/activate        # Windows: venv\Scripts\activate
-
-pip install -r requirements.txt
-python app.py
-```
-
-App: **http://localhost:5000** (SQLite DB auto-created at `data/complaints.db`)
-
-Production-style run (no debug/auto-reload):
-```bash
-gunicorn --bind 0.0.0.0:5000 --workers 3 app:app
-```
-
-### Default Admin Account
-
-- **Email:** `admin@example.com`
-- **Password:** `admin123`
-
-Change this immediately after first login (via Profile) if deploying anywhere beyond local testing.
-
-### Configuration
-
-| Variable        | Default                          | Purpose                          |
-|------------------|-----------------------------------|-----------------------------------|
-| `SECRET_KEY`     | `dev-secret-key-change-in-production` | Flask session signing key   |
-| `DATABASE_PATH`  | `data/complaints.db`             | Path to the SQLite database file |
-| `UPLOAD_FOLDER`  | `data/uploads`                   | Path where attachments are stored |
 
 ---
 
-## 🔧 GitHub Repository Setup
+## 💻 Manual / Local Development Setup (Without Docker)
 
-```bash
-cd complaint-management-system
-git init
-git add .
-git commit -m "Initial commit: Complaint Management System"
-git branch -M main
-git remote add origin https://github.com/<your-username>/<your-repo>.git
-git push -u origin main
-```
+### Prerequisites
+- [Node.js](https://nodejs.org/) (v18 or higher)
+- [MySQL Server](https://dev.mysql.com/downloads/mysql/) running locally.
 
-`.gitignore` already excludes `__pycache__/`, the local `data/` directory (DB + uploads), virtual envs, and IDE files, so the repo stays clean.
+### 1. Database Setup
+1. Log into your local MySQL server:
+   ```bash
+   mysql -u root -p
+   ```
+2. Execute the schema file to initialize the database and tables:
+   ```sql
+   source ./database/schema.sql;
+   ```
 
-Suggested repo hygiene:
-- Add a branch per feature (`feature/dashboard-charts`, `feature/pdf-export`, etc.) if working with a team, then merge via pull request.
-- Tag releases (`git tag v1.0.0`) once the app is stable.
-- Add a `LICENSE` file (MIT suggested) if this will be public.
+### 2. Backend Setup
+1. Navigate into the `backend/` directory:
+   ```bash
+   cd backend
+   ```
+2. Install npm dependencies:
+   ```bash
+   npm install
+   ```
+3. Create a `.env` file based on `.env.example`:
+   ```env
+   PORT=3000
+   DB_HOST=localhost
+   DB_PORT=3306
+   DB_USER=root
+   DB_PASSWORD=your_mysql_password
+   DB_NAME=complaint_system
+   SESSION_SECRET=your_secret_key_here
+   ```
+4. Start the server:
+   ```bash
+   npm start
+   ```
+5. Open your browser and navigate to `http://localhost:3000/pages/dashboard.html`.
+
+---
+
+## 📊 Member 4 API Reference (Dashboard & Reports)
+
+| Method | Endpoint | Description | Query Parameters |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/api/dashboard/stats` | KPI summary statistics (Total, Pending, In Progress, Resolved, Rejected, High Priority counts) and recent complaints list. | `status`, `category`, `priority`, `startDate`, `endDate` |
+| `GET` | `/api/dashboard/charts` | Chart-specific datasets for Status doughnut, Category bar chart, Monthly trend line chart, and Priority pie chart. | `status`, `category`, `priority` |
+| `GET` | `/api/dashboard/export/csv` | Streams downloadable CSV report file with all filtered complaints and user details. | `status`, `category`, `priority`, `startDate`, `endDate` |
+| `GET` | `/api/dashboard/report-summary` | Aggregated report summary payload for reporting and printable views. | `status`, `category`, `priority`, `startDate`, `endDate` |
+| `GET` | `/api/health` | Checks Node.js server health and MySQL database connectivity. | None |
 
 ---
 
 ## 🧪 Testing
 
-Manual functional test coverage performed during development (all passing):
-
-| Area | Test | Result |
-|---|---|---|
-| Auth | Register with duplicate email / short password / mismatched passwords | Rejected with flash message ✅ |
-| Auth | Login with wrong credentials | Rejected ✅ |
-| Auth | Password stored hashed, never plaintext | Verified in DB ✅ |
-| Complaints | Create complaint with and without a file attachment | Both succeed ✅ |
-| Complaints | Edit blocked once status leaves `Pending` | Verified ✅ |
-| Complaints | Delete removes complaint + its update history + attachment file | Verified ✅ |
-| Access control | Non-admin blocked from `/admin/*` routes | 302 redirect + flash ✅ |
-| Access control | User cannot view/edit another user's complaint | Verified ✅ |
-| Access control | Attachment download restricted to owner + admin (403 for others) | Verified ✅ |
-| Admin | Status transitions logged in `complaint_updates` with remarks | Verified ✅ |
-| Admin | Complaint assignment to an admin, shown on list + detail | Verified ✅ |
-| Notifications | Owner notified on status change; admins notified on new complaint | Verified ✅ |
-| Reports | CSV export produces correct rows/columns | Verified ✅ |
-| Reports | PDF export produces a valid, well-formed PDF | Verified ✅ |
-| Dashboard | Search / filter by status, category, priority | Verified ✅ |
-| Dashboard | Pagination across multiple pages | Verified ✅ |
-| UI | Dark mode toggle persists across reloads (localStorage) | Verified ✅ |
-
-To re-run the smoke tests locally, start the app and exercise the routes with `curl` (see `docs/manual-test-notes.md` if you add one), or write `pytest` + Flask test-client cases against `app.py`'s routes for CI.
-
----
-
-## 🗺️ API / Route Overview
-
-| Method | Route | Access | Purpose |
-|---|---|---|---|
-| GET | `/` | Public | Landing page (or redirect to dashboard if logged in) |
-| GET/POST | `/register` | Public | Create account |
-| GET/POST | `/login` | Public | Log in |
-| GET | `/logout` | Auth | Log out |
-| GET/POST | `/profile` | Auth | View/edit profile |
-| GET | `/dashboard` | Auth | Stats + charts |
-| GET | `/complaints` | Auth | List (search/filter/paginate) |
-| GET/POST | `/complaints/new` | Auth | Create complaint |
-| GET | `/complaints/<id>` | Auth (owner/admin) | View detail + history |
-| GET/POST | `/complaints/<id>/edit` | Auth (owner, status=Pending) | Edit complaint |
-| POST | `/complaints/<id>/delete` | Auth (owner/admin) | Delete complaint |
-| GET | `/uploads/<filename>` | Auth (owner/admin) | Download attachment |
-| POST | `/admin/complaints/<id>/update` | Admin | Change status/assignment/remark |
-| GET | `/export/csv` | Admin | Download CSV report |
-| GET | `/export/pdf` | Admin | Download PDF report |
-| POST | `/notifications/mark-all-read` | Auth | Mark all notifications read |
-| GET | `/notifications/<id>/open` | Auth | Open + mark one notification read |
-
----
-
-## 📌 Extending This Project
-
-Still-open ideas from the original spec:
-- Real email delivery on status change (wire up `Flask-Mail` with SMTP env vars)
-- Bulk actions in the admin panel (multi-select status change)
-- Per-admin "My Assigned Complaints" view
-- Rate limiting on login/register
-
-## License
-
-MIT — provided as-is for educational purposes.
+1. **Health Check**: Run `curl http://localhost:3000/api/health` or visit in browser to verify that the server connects to MySQL.
+2. **Dashboard Statistics**: Test `GET http://localhost:3000/api/dashboard/stats` to ensure aggregate queries return correct counts.
+3. **CSV Export**: Click the **"Export CSV Report"** button on the dashboard or visit `GET http://localhost:3000/api/dashboard/export/csv` to verify CSV download.
+4. **PDF / Print Report**: Click **"Print / Export PDF"** on the dashboard to generate printable reports.
