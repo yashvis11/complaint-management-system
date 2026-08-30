@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Complaint Details - ComplaintMS</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="../css/style.css">
+
+</head>
+
+<body>
+
+    <!-- Navigation -->
+
+    <nav class="navbar navbar-light bg-white border-bottom">
+
+        <div class="container-fluid px-4">
+
+            <a class="navbar-brand fw-bold text-primary" href="dashboard.html">
+
+                📋 ComplaintMS
+
+            </a>
+
+            <div class="d-flex gap-2">
+
+                <a href="dashboard.html" class="btn btn-outline-primary">
+
+                    Dashboard
+
+                </a>
+
+                <a href="complaints.html" class="btn btn-outline-secondary">
+
+                    Complaints
+
+                </a>
+
+                <a href="create-complaint.html" class="btn btn-primary">
+
+                    + New Complaint
+
+                </a>
+
+            </div>
+
+        </div>
+
+    </nav>
+
+
+    <!-- Main -->
+
+    <main class="container py-5">
+
+        <div class="mb-4">
+
+            <a href="complaints.html" class="btn btn-outline-secondary">
+
+                ← Back to Complaints
+
+            </a>
+
+        </div>
+
+
+        <div id="loading" class="text-center py-5">
+
+            Loading complaint...
+
+        </div>
+
+
+        <div id="error" class="alert alert-danger d-none">
+
+        </div>
+
+
+        <div id="complaintCard" class="card shadow-sm border-0 d-none">
+
+            <div class="card-body p-4 p-md-5">
+
+                <div class="d-flex justify-content-between align-items-start mb-4">
+
+                    <div>
+
+                        <h1 id="complaintTitle">
+                            Complaint
+                        </h1>
+
+                        <p id="complaintId" class="text-muted">
+                        </p>
+
+                    </div>
+
+                    <span id="status" class="badge fs-6">
+                    </span>
+
+                </div>
+
+
+                <hr>
+
+
+                <div class="row g-4 mt-2">
+
+                    <div class="col-md-6">
+
+                        <strong>Category</strong>
+
+                        <p id="category" class="mt-1">
+                        </p>
+
+                    </div>
+
+
+                    <div class="col-md-6">
+
+                        <strong>Priority</strong>
+
+                        <p id="priority" class="mt-1">
+                        </p>
+
+                    </div>
+
+
+                    <div class="col-md-6">
+
+                        <strong>Submitted Date</strong>
+
+                        <p id="createdAt" class="mt-1">
+                        </p>
+
+                    </div>
+
+
+                    <div class="col-md-6">
+
+                        <strong>Last Updated</strong>
+
+                        <p id="updatedAt" class="mt-1">
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="mt-4">
+
+                    <h5>Description</h5>
+
+                    <div id="description" class="p-3 bg-light rounded">
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </main>
+
+
+    <script>
+
+        const API_BASE_URL = window.location.origin;
+
+
+        const params =
+            new URLSearchParams(window.location.search);
+
+        const complaintId =
+            params.get("id");
+
+
+        const loading =
+            document.getElementById("loading");
+
+        const errorBox =
+            document.getElementById("error");
+
+        const card =
+            document.getElementById("complaintCard");
+
+
+        async function loadComplaint() {
+
+            if (!complaintId) {
+
+                showError("Complaint ID is missing.");
+
+                return;
+
+            }
+
+
+            try {
+
+                const response = await fetch(
+                    `${API_BASE_URL}/api/complaints/${complaintId}`
+                );
+
+
+                const result =
+                    await response.json();
+
+
+                console.log(
+                    "Complaint details:",
+                    result
+                );
+
+
+                if (!response.ok || !result.success) {
+
+                    throw new Error(
+                        result.message ||
+                        "Failed to load complaint"
+                    );
+
+                }
+
+
+                const complaint = result.data;
+
+
+                document.getElementById(
+                    "complaintTitle"
+                ).textContent =
+                    complaint.title;
+
+
+                document.getElementById(
+                    "complaintId"
+                ).textContent =
+                    `Complaint #${complaint.id}`;
+
+
+                document.getElementById(
+                    "category"
+                ).textContent =
+                    complaint.category;
+
+
+                document.getElementById(
+                    "priority"
+                ).textContent =
+                    complaint.priority;
+
+
+                document.getElementById(
+                    "status"
+                ).textContent =
+                    complaint.status;
+
+
+                document.getElementById(
+                    "description"
+                ).textContent =
+                    complaint.description;
+
+
+                document.getElementById(
+                    "createdAt"
+                ).textContent =
+                    formatDate(complaint.created_at);
+
+
+                document.getElementById(
+                    "updatedAt"
+                ).textContent =
+                    formatDate(complaint.updated_at);
+
+
+                loading.classList.add("d-none");
+
+                card.classList.remove("d-none");
+
+
+            } catch (err) {
+
+                console.error(err);
+
+                showError(
+                    err.message ||
+                    "Unable to load complaint."
+                );
+
+            }
+
+        }
+
+
+        function showError(text) {
+
+            loading.classList.add("d-none");
+
+            errorBox.textContent = text;
+
+            errorBox.classList.remove("d-none");
+
+        }
+
+
+        function formatDate(dateString) {
+
+            if (!dateString) {
+                return "-";
+            }
+
+            return new Date(dateString)
+                .toLocaleString("en-IN", {
+
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit"
+
+                });
+
+        }
+
+
+        loadComplaint();
+
+    </script>
+
+</body>
+
+</html>

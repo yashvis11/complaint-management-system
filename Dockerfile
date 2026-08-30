@@ -7,6 +7,7 @@ COPY backend/package*.json ./
 RUN npm install --production
 
 COPY backend/ ./
+COPY frontend/ ./frontend/
 
 EXPOSE 3000
 
