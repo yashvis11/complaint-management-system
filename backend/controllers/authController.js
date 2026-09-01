@@ -76,4 +76,46 @@ const registerUser = async(req, res) =>{
     }
 }
 
-module.exports = {registerUser}
+
+const loginUser = async(req, res) =>{
+  const userData = {
+    email: req.body.email,
+    password: req.body.password,
+  };
+  if (!userData.email || !userData.password) {
+    return res.status(400).json({
+      success: false,
+      message: "Please fill all the required fields",
+    });
+  }
+  const checkEmailResult = await checkEmail(userData);
+  if (checkEmailResult.length === 0) {
+    return res.status(401).json({
+      sucess: false,
+      message: "Invalid email of password",
+    });
+  }
+  const user = checkEmailResult[0]
+  const compareResult = await bcrypt.compare(
+    userData.password,
+    user.password, //hashed password from the database
+  );
+  //check if the password entered is correcr
+  if (!compareResult) {
+    return res.status(401).json({
+      success: false,
+      message: "Invalid email of password",
+    });
+  }
+  //make the session
+  req.session.userId = user.id
+  req.session.name = user.name
+  req.session.role = user.role
+
+  return res.status(200).json({
+    success: true,
+    message: "Login successful"
+  })
+}
+
+module.exports = {registerUser, loginUser}

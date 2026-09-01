@@ -5,11 +5,19 @@ require("dotenv").config();
 const db = require("./config/db");
 
 const app = express();
+const session = require("express-session")
 const authenticationRoutes = require("./routes/authRoutes")
 
 app.use(cors());
 app.use(express.json());
-
+app.use(session({
+  secret: process.env.SESSION_SECRET, 
+  resave: false,
+  saveUninitialized: false,
+  cookie:{
+    maxAge: 1000*60*60  //1 hour
+  }
+}))
 app.get("/", (req, res) => {
   res.json({
     success: true,
