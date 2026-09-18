@@ -3,6 +3,7 @@ const cors = require("cors");
 require("dotenv").config();
 
 const db = require("./config/db");
+const complaintRoutes = require("./routes/complaintRoutes");
 
 const app = express();
 const session = require("express-session")
@@ -18,6 +19,8 @@ app.use(session({
     maxAge: 1000*60*60  //1 hour
   }
 }))
+app.use("/api/complaints", complaintRoutes);
+
 app.get("/", (req, res) => {
   res.json({
     success: true,
