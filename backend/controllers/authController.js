@@ -104,7 +104,7 @@ const loginUser = async(req, res) =>{
   if (!compareResult) {
     return res.status(401).json({
       success: false,
-      message: "Invalid email of password",
+      message: "Invalid email or password",
     });
   }
   //make the session
