@@ -2,7 +2,7 @@
 // COMPLAINTS PAGE JAVASCRIPT
 // =========================================================
 
-const API_BASE_URL = window.location.origin;
+const API_BASE_URL = "http://localhost:3000";
 
 const tableBody = document.getElementById("complaintsTableBody");
 

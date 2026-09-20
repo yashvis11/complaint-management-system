@@ -2,7 +2,7 @@
 // CREATE COMPLAINT PAGE JAVASCRIPT
 // =========================================================
 
-const API_BASE_URL = window.location.origin;
+const API_BASE_URL = "http://localhost:3000";
 
 const complaintForm = document.getElementById("complaintForm");
 const submitButton = document.getElementById("submitButton");
