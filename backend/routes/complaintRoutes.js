@@ -10,10 +10,12 @@ const {
     deleteComplaint
 } = require("../controllers/complaintController");
 
-router.post("/", createComplaint);
-router.get("/", getComplaints);
-router.get("/:id", getComplaintById);
-router.put("/:id", updateComplaint);
-router.delete("/:id", deleteComplaint);
+const {authMiddleware} = require("../middleware/authMiddleware")
+
+router.post("/", authMiddleware, createComplaint);
+router.get("/", authMiddleware, getComplaints);
+router.get("/:id", authMiddleware, getComplaintById);
+router.put("/:id", authMiddleware, updateComplaint);
+router.delete("/:id", authMiddleware, deleteComplaint);
 
 module.exports = router;
