@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Complaint Details - ComplaintMS</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-light bg-white border-bottom">
+        <div class="container-fluid px-4">
+
+            <a class="navbar-brand fw-bold text-primary" href="dashboard.html">
+                📋 ComplaintMS
+            </a>
+
+            <div class="d-flex gap-2">
+
+                <a href="dashboard.html" class="btn btn-outline-primary">
+                    Dashboard
+                </a>
+
+                <a href="complaints.html" class="btn btn-outline-secondary">
+                    My Complaints
+                </a>
+
+                <a href="profile.html" class="btn btn-outline-secondary">
+                    Profile
+                </a>
+
+            </div>
+
+        </div>
+    </nav>
+
+
+    <!-- Main Content -->
+    <main class="container py-5">
+
+        <!-- Back Button -->
+        <div class="mb-4">
+
+            <a href="complaints.html" class="btn btn-outline-secondary">
+                ← Back to Complaints
+            </a>
+
+        </div>
+
+
+        <!-- Loading Message -->
+        <div id="loadingMessage" class="text-center py-5">
+
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">
+                    Loading...
+                </span>
+            </div>
+
+            <p class="text-muted mt-3 mb-0">
+                Loading complaint details...
+            </p>
+
+        </div>
+
+
+        <!-- Error Message -->
+        <div
+            id="errorMessage"
+            class="alert alert-danger d-none"
+            role="alert"
+        ></div>
+
+
+        <!-- Complaint Details -->
+        <div id="complaintDetails" class="d-none">
+
+            <div class="card shadow-sm border-0">
+
+                <div class="card-body p-4">
+
+                    <!-- Header -->
+                    <div class="d-flex justify-content-between align-items-start mb-4">
+
+                        <div>
+
+                            <p
+                                id="complaintId"
+                                class="text-muted mb-2"
+                            ></p>
+
+                            <h1
+                                id="complaintTitle"
+                                class="mb-0"
+                            ></h1>
+
+                        </div>
+
+                        <span
+                            id="complaintStatus"
+                            class="badge fs-6"
+                        ></span>
+
+                    </div>
+
+
+                    <hr>
+
+
+                    <!-- Complaint Information -->
+                    <div class="row g-4 mt-1">
+
+                        <!-- Category -->
+                        <div class="col-md-6">
+
+                            <div class="text-muted small mb-1">
+                                Category
+                            </div>
+
+                            <div
+                                id="complaintCategory"
+                                class="fw-semibold"
+                            ></div>
+
+                        </div>
+
+
+                        <!-- Priority -->
+                        <div class="col-md-6">
+
+                            <div class="text-muted small mb-1">
+                                Priority
+                            </div>
+
+                            <span
+                                id="complaintPriority"
+                                class="badge"
+                            ></span>
+
+                        </div>
+
+
+                        <!-- Created Date -->
+                        <div class="col-md-6">
+
+                            <div class="text-muted small mb-1">
+                                Submitted On
+                            </div>
+
+                            <div
+                                id="complaintCreatedAt"
+                                class="fw-semibold"
+                            ></div>
+
+                        </div>
+
+
+                        <!-- Updated Date -->
+                        <div class="col-md-6">
+
+                            <div class="text-muted small mb-1">
+                                Last Updated
+                            </div>
+
+                            <div
+                                id="complaintUpdatedAt"
+                                class="fw-semibold"
+                            ></div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- Description -->
+                    <div class="mt-5">
+
+                        <h5 class="mb-3">
+                            Description
+                        </h5>
+
+                        <div
+                            id="complaintDescription"
+                            class="bg-light rounded p-4"
+                            style="white-space: pre-wrap;"
+                        ></div>
+
+                    </div>
+
+
+                    <!-- Actions -->
+                    <div class="d-flex justify-content-end gap-2 mt-4">
+
+                        <a
+                            id="editButton"
+                            href="#"
+                            class="btn btn-outline-warning"
+                        >
+                            Edit Complaint
+                        </a>
+
+                        <a
+                            href="complaints.html"
+                            class="btn btn-primary"
+                        >
+                            Back to My Complaints
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </main>
+
+
+    <!-- Complaint Details JavaScript -->
+    <script src="../js/complaint-details.js"></script>
+
+</body>
+
+</html>
