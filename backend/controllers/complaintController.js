@@ -199,7 +199,7 @@ const deleteComplaint = async (req, res) => {
             message: "Complaint deleted successfully"
            })
           } else {
-            res.status(401).json({
+            return res.status(401).json({
               success: false,
               message: "Unauthorized access",
             });

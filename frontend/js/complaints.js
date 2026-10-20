@@ -16,10 +16,15 @@ async function loadComplaints() {
     try {
 
         const response = await fetch(
-            `${API_BASE_URL}/api/complaints`
+            `${API_BASE_URL}/api/complaints`,
+            {
+                credentials: "include"
+            }
         );
 
         const result = await response.json();
+
+
 
         console.log("Complaints API:", result);
 

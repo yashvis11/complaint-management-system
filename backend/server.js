@@ -4,23 +4,33 @@ require("dotenv").config();
 
 const db = require("./config/db");
 const complaintRoutes = require("./routes/complaintRoutes");
-
+const profileRoutes = require("./routes/profileRoutes");
+   
 const app = express();
 const session = require("express-session")
 const authenticationRoutes = require("./routes/authRoutes")
-
-app.use(cors());
+const dashboardRoutes = require("./routes/dashboardRoutes");
+const adminRoutes = require("./routes/adminRoutes");
+app.use(
+  cors({
+    origin: "http://localhost:5500",
+    credentials: true,
+  }),
+);
 app.use(express.json());
 app.use(session({
   secret: process.env.SESSION_SECRET, 
   resave: false,
   saveUninitialized: false,
   cookie:{
-    maxAge: 1000*60*60  //1 hour
+    maxAge: 1000*60*60,
+    secure: false,
+    sameSite: "lax"  //1 hour
   }
 }))
 app.use("/api/complaints", complaintRoutes);
-
+app.use("/api/admin", adminRoutes);
+app.use("/api/profile", profileRoutes);
 app.get("/", (req, res) => {
   res.json({
     success: true,
@@ -48,6 +58,7 @@ app.get("/api/health", async (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 app.use("/api/auth", authenticationRoutes)
+app.use("/api/dashboard", dashboardRoutes);
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });

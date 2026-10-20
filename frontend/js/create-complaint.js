@@ -63,7 +63,7 @@ complaintForm.addEventListener("submit", async function (event) {
             `${API_BASE_URL}/api/complaints`,
             {
                 method: "POST",
-
+                credentials: "include",
                 headers: {
                     "Content-Type": "application/json"
                 },
