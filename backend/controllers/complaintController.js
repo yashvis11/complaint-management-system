@@ -1,5 +1,6 @@
 const db = require("../config/db");
-
+const fs = require("fs");
+const path = require("path");
 const createComplaint = async (req, res) => {
     try {
         const { title, description, category, priority } = req.body;
@@ -12,12 +13,13 @@ const createComplaint = async (req, res) => {
         }
 
         const userId = req.session.userId; //from session, protected route going through the middleware
+        const imagePath = req.file ? `uploads/${req.file.filename}` : null;
 
         const [result] = await db.query(
             `INSERT INTO Complaints
-            (user_id, title, description, category, priority, status)
-            VALUES (?, ?, ?, ?, ?, 'Pending')`,
-            [userId, title, description, category, priority]
+            (user_id, title, description, category, priority, status, image_path)
+            VALUES (?, ?, ?, ?, ?, 'Pending', ?)`,
+            [userId, title, description, category, priority, imagePath]
         );
 
         res.status(201).json({
@@ -193,6 +195,12 @@ const deleteComplaint = async (req, res) => {
 
           if (complaints[0].user_id === userId) {
             //the user owns the complaint
+            if (complaints[0].image_path) {
+              fs.unlink(
+                path.join(__dirname, "..", complaints[0].image_path),
+                () => {},
+              );
+            }
            await db.query("DELETE FROM complaints WHERE id = ?", [complaintId]);
            return res.status(200).json({
             success: true,

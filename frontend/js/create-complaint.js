@@ -44,6 +44,38 @@ complaintForm.addEventListener("submit", async function (event) {
         return;
     }
 
+        // =====================================================
+    // IMAGE CHECK (optional field)
+    // =====================================================
+
+    const imageFile = document.getElementById("image").files[0];
+
+    if (imageFile && imageFile.size > 5 * 1024 * 1024) {
+
+        errorMessage.textContent =
+            "Image must be under 5 MB.";
+
+        errorMessage.classList.remove("d-none");
+
+        return;
+    }
+
+
+    // =====================================================
+    // BUILD FORM DATA (needed for file uploads)
+    // =====================================================
+
+    const formData = new FormData();
+
+    formData.append("title", title);
+    formData.append("description", description);
+    formData.append("category", category);
+    formData.append("priority", priority);
+
+    if (imageFile) {
+        formData.append("image", imageFile);
+    }
+
 
     // =====================================================
     // DISABLE BUTTON WHILE SUBMITTING
@@ -64,16 +96,9 @@ complaintForm.addEventListener("submit", async function (event) {
             {
                 method: "POST",
                 credentials: "include",
-                headers: {
-                    "Content-Type": "application/json"
-                },
+                
 
-                body: JSON.stringify({
-                    title: title,
-                    description: description,
-                    category: category,
-                    priority: priority
-                })
+                body: formData
             }
         );
 

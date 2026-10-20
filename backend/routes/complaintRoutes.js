@@ -1,6 +1,8 @@
 const express = require("express");
 
 const router = express.Router();
+const uploadImage = require("../middleware/upload");
+
 
 const {
     createComplaint,
@@ -12,7 +14,7 @@ const {
 
 const {authMiddleware} = require("../middleware/authMiddleware")
 
-router.post("/", authMiddleware, createComplaint);
+router.post("/", authMiddleware, uploadImage, createComplaint);
 router.get("/", authMiddleware, getComplaints);
 router.get("/:id", authMiddleware, getComplaintById);
 router.put("/:id", authMiddleware, updateComplaint);

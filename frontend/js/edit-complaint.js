@@ -44,7 +44,10 @@ async function loadComplaint() {
     try {
 
         const response = await fetch(
-            `${API_BASE_URL}/api/complaints/${complaintId}`
+            `${API_BASE_URL}/api/complaints/${complaintId}`,
+            {
+                credentials: "include"
+            }
         );
 
         const result = await response.json();
@@ -114,7 +117,14 @@ async function loadComplaint() {
         document.getElementById("priority").value =
             complaint.priority || "Medium";
 
+        if (complaint.image_path) {
+            document.getElementById("currentImage").src =
+            `${API_BASE_URL}/${complaint.image_path}`;
 
+            document
+                .getElementById("currentImageSection")
+                .classList.remove("d-none");
+        }
         // -------------------------------------------------
         // DISPLAY STATUS
         // -------------------------------------------------
@@ -226,6 +236,7 @@ editComplaintForm.addEventListener(
                 `${API_BASE_URL}/api/complaints/${complaintId}`,
                 {
                     method: "PUT",
+                    credentials: "include",
 
                     headers: {
                         "Content-Type": "application/json"

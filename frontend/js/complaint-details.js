@@ -38,7 +38,10 @@ async function loadComplaint() {
     try {
 
         const response = await fetch(
-            `${API_BASE_URL}/api/complaints/${complaintId}`
+            `${API_BASE_URL}/api/complaints/${complaintId}`,
+            {
+                credentials: "include"
+            }
         );
 
         const result = await response.json();
@@ -64,8 +67,7 @@ async function loadComplaint() {
         // { success: true, complaint: {...} }
 
         const complaint = result.complaint;
-
-
+        
         if (!complaint) {
 
             throw new Error(
@@ -104,78 +106,82 @@ async function loadComplaint() {
 // =========================================================
 
 function displayComplaint(complaint) {
+  document.getElementById("complaintId").textContent =
+    `Complaint #${complaint.id}`;
 
-    document.getElementById("complaintId").textContent =
-        `Complaint #${complaint.id}`;
+  document.getElementById("complaintTitle").textContent =
+    complaint.title || "-";
 
-    document.getElementById("complaintTitle").textContent =
-        complaint.title || "-";
+  document.getElementById("complaintCategory").textContent =
+    complaint.category || "-";
 
-    document.getElementById("complaintCategory").textContent =
-        complaint.category || "-";
+  document.getElementById("complaintDescription").textContent =
+    complaint.description || "-";
 
-    document.getElementById("complaintDescription").textContent =
-        complaint.description || "-";
+  // -----------------------------------------------------
+  // PRIORITY
+  // -----------------------------------------------------
 
+  const priorityElement = document.getElementById("complaintPriority");
 
-    // -----------------------------------------------------
-    // PRIORITY
-    // -----------------------------------------------------
+  priorityElement.textContent = complaint.priority || "-";
 
-    const priorityElement =
-        document.getElementById("complaintPriority");
+  priorityElement.className = `badge ${getPriorityClass(complaint.priority)}`;
 
-    priorityElement.textContent =
-        complaint.priority || "-";
+  // -----------------------------------------------------
+  // STATUS
+  // -----------------------------------------------------
 
-    priorityElement.className =
-        `badge ${getPriorityClass(complaint.priority)}`;
+  const statusElement = document.getElementById("complaintStatus");
 
+  statusElement.textContent = complaint.status || "-";
 
-    // -----------------------------------------------------
-    // STATUS
-    // -----------------------------------------------------
+  statusElement.className = `badge fs-6 ${getStatusClass(complaint.status)}`;
 
-    const statusElement =
-        document.getElementById("complaintStatus");
+  // -----------------------------------------------------
+  // DATES
+  // -----------------------------------------------------
 
-    statusElement.textContent =
-        complaint.status || "-";
+  document.getElementById("complaintCreatedAt").textContent = formatDate(
+    complaint.created_at,
+  );
 
-    statusElement.className =
-        `badge fs-6 ${getStatusClass(complaint.status)}`;
+  document.getElementById("complaintUpdatedAt").textContent = formatDate(
+    complaint.updated_at,
+  );
 
+  // -----------------------------------------------------
+  // ASSIGNED TO
+  // -----------------------------------------------------
 
-    // -----------------------------------------------------
-    // DATES
-    // -----------------------------------------------------
+  document.getElementById("complaintAssignedTo").textContent =
+    complaint.assigned_name || "Not assigned yet";
 
-    document.getElementById("complaintCreatedAt").textContent =
-        formatDate(complaint.created_at);
+  // -----------------------------------------------------
+  // PHOTO
+  // -----------------------------------------------------
 
-    document.getElementById("complaintUpdatedAt").textContent =
-        formatDate(complaint.updated_at);
+  if (complaint.image_path) {
+    document.getElementById("complaintImage").src =
+      `${API_BASE_URL}/${complaint.image_path}`;
 
+    document.getElementById("complaintImageSection").classList.remove("d-none");
+  }
+  // -----------------------------------------------------
+  // EDIT BUTTON
+  // -----------------------------------------------------
 
-    // -----------------------------------------------------
-    // EDIT BUTTON
-    // -----------------------------------------------------
+  const editButton = document.getElementById("editButton");
 
-    const editButton =
-        document.getElementById("editButton");
+  editButton.href = `edit-complaint.html?id=${complaint.id}`;
 
-    editButton.href =
-        `edit-complaint.html?id=${complaint.id}`;
+  // -----------------------------------------------------
+  // SHOW DETAILS
+  // -----------------------------------------------------
 
+  loadingMessage.classList.add("d-none");
 
-    // -----------------------------------------------------
-    // SHOW DETAILS
-    // -----------------------------------------------------
-
-    loadingMessage.classList.add("d-none");
-
-    complaintDetails.classList.remove("d-none");
-
+  complaintDetails.classList.remove("d-none");
 }
 
 
