@@ -77,7 +77,9 @@ exports.getComplaint = async (req, res) => {
 // ---------- Admins that a complaint can be assigned to ----------
 exports.getStaff = async (req, res) => {
   try {
-    const [rows] = await db.query("SELECT id, name FROM users WHERE role = 'admin'");
+    const [rows] = await db.query(
+      "SELECT id, name FROM users WHERE role = 'staff' ORDER BY name",
+    );
     res.json({ success: true, data: rows });
   } catch (error) {
     serverError(res, error, "Failed to load admins");
@@ -110,12 +112,17 @@ exports.updateComplaint = async (req, res) => {
 
     if (assigned_to !== undefined) {
       if (assigned_to !== null) {
-        const [admins] = await db.query(
-          "SELECT id FROM users WHERE id = ? AND role = 'admin'",
-          [assigned_to]
+        const [staff] = await db.query(
+          "SELECT id FROM users WHERE id = ? AND role = 'staff'",
+          [assigned_to],
         );
-        if (admins.length === 0) {
-          return res.status(400).json({ success: false, message: "Assignee must be an admin" });
+        if (staff.length === 0) {
+          return res
+            .status(400)
+            .json({
+              success: false,
+              message: "Assignee must be a staff member",
+            });
         }
       }
       fields.push("assigned_to = ?");

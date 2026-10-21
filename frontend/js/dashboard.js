@@ -1019,6 +1019,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
       if (result.success && result.data.role === "admin") {
         document.getElementById("adminNavItem").classList.remove("d-none");
+      } else if (result.success && result.data.role === "staff") {
+        document.getElementById("staffNavItem").classList.remove("d-none");
       }
     } catch (error) {
       console.error("Could not check role:", error);

@@ -9,15 +9,17 @@ const {
     getComplaints,
     getComplaintById,
     updateComplaint,
-    deleteComplaint
+    deleteComplaint,
+    getAssignedComplaints
 } = require("../controllers/complaintController");
 
 const {authMiddleware} = require("../middleware/authMiddleware")
 
 router.post("/", authMiddleware, uploadImage, createComplaint);
 router.get("/", authMiddleware, getComplaints);
+router.get("/assigned", authMiddleware, getAssignedComplaints);
 router.get("/:id", authMiddleware, getComplaintById);
-router.put("/:id", authMiddleware, updateComplaint);
+router.put("/:id", authMiddleware, uploadImage, updateComplaint);
 router.delete("/:id", authMiddleware, deleteComplaint);
 
 module.exports = router;

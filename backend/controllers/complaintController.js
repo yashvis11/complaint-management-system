@@ -43,7 +43,11 @@ const getComplaints = async (req, res) => {
         const userId = req.session.userId; //from session, will go through the middleware
 
         const [complaints] = await db.query(
-            "SELECT * FROM complaints WHERE user_id = ? ORDER BY created_at DESC",
+            `SELECT c.*, a.name AS assigned_name
+            FROM complaints c
+            LEFT JOIN users a ON a.id = c.assigned_to
+            WHERE c.user_id = ?
+            ORDER BY c.created_at DESC`,
             [userId]
         );
 
@@ -70,9 +74,12 @@ const getComplaintById = async (req, res) => {
         //check if complaint exists
 
         const [complaints] = await db.query(
-            "SELECT * FROM complaints WHERE id = ?", 
-            [complaintId]
-        )
+          `SELECT c.*, a.name AS assigned_name
+            FROM complaints c
+            LEFT JOIN users a ON a.id = c.assigned_to
+            WHERE c.id = ?`,
+            [complaintId],
+        );
 
         if (complaints.length > 0) { //complaint is found
             //proceed with checking if the user trying to get the complaint owns that complaint
@@ -112,7 +119,7 @@ const updateComplaint = async (req, res) => {
     try {
         const complaintId = req.params.id;
         const userId = req.session.userId;
-
+        const newImagePath = req.file ? `uploads/${req.file.filename}` : null;
         const { title, description, category, priority } = req.body;
 
         if (!title || !description || !category || !priority) {
@@ -144,9 +151,10 @@ const updateComplaint = async (req, res) => {
         if (complaints[0].user_id === userId){  //user is authorized
             await db.query(
               `UPDATE complaints
-             SET title = ?, description = ?, category = ?, priority = ?
-             WHERE id = ?`,
-              [title, description, category, priority, complaintId],
+                SET title = ?, description = ?, category = ?, priority = ?,
+                image_path = COALESCE(?, image_path)
+                WHERE id = ?`,
+              [title, description, category, priority, newImagePath, complaintId],
             );
 
             return res.status(200).json({
@@ -229,10 +237,33 @@ const deleteComplaint = async (req, res) => {
     }
 };
 
+const getAssignedComplaints = async (req, res) => {
+  try {
+    const [complaints] = await db.query(
+      `SELECT c.*, u.name AS user_name
+             FROM complaints c
+             JOIN users u ON u.id = c.user_id
+             WHERE c.assigned_to = ?
+             ORDER BY c.created_at DESC`,
+      [req.session.userId],
+    );
+
+    res.status(200).json({ success: true, complaints });
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      success: false,
+      message: "Unable to fetch assigned complaints",
+    });
+  }
+};
+
 module.exports = {
-    createComplaint,
-    getComplaints,
-    getComplaintById,
-    updateComplaint,
-    deleteComplaint
+  createComplaint,
+  getComplaints,
+  getComplaintById,
+  updateComplaint,
+  deleteComplaint,
+  getAssignedComplaints,
 };
