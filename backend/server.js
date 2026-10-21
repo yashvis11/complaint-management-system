@@ -14,7 +14,7 @@ const dashboardRoutes = require("./routes/dashboardRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 app.use(
   cors({
-    origin: "http://localhost:5500",
+    origin: process.env.FRONTEND_ORIGIN || "http://localhost:5500",
     credentials: true,
   }),
 );
