@@ -10,6 +10,7 @@ const {
   updateComplaint,
   deleteComplaint,
   getAssignedComplaints,
+  resolveAssignedComplaint,
 } = require("../controllers/complaintController");
 
 const { authMiddleware } = require("../middleware/authMiddleware");
@@ -21,22 +22,19 @@ router.post("/", authMiddleware, uploadImage, createComplaint);
 // Get complaints submitted by the logged-in user
 router.get("/", authMiddleware, getComplaints);
 
-// Get complaints assigned to the logged-in, approved staff member
-// IMPORTANT: Keep this route BEFORE /:id
-router.get(
-  "/assigned",
-  authMiddleware,
-  isStaff,
-  getAssignedComplaints,
-);
+// Get complaints assigned to approved staff
+router.get("/assigned", authMiddleware, isStaff, getAssignedComplaints);
+
+// Staff marks their assigned complaint as resolved
+router.patch("/:id/resolve", authMiddleware, isStaff, resolveAssignedComplaint);
 
 // Get a particular complaint by ID
 router.get("/:id", authMiddleware, getComplaintById);
 
-// Update a complaint
+// Update a complaint submitted by a user
 router.put("/:id", authMiddleware, uploadImage, updateComplaint);
 
-// Delete a complaint
+// Delete a complaint submitted by a user
 router.delete("/:id", authMiddleware, deleteComplaint);
 
 module.exports = router;
