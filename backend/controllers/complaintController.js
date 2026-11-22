@@ -1,33 +1,58 @@
 const db = require("../config/db");
 const fs = require("fs");
 const path = require("path");
+const { sendComplaintAcknowledgement } = require("../utils/emailService");
 const createComplaint = async (req, res) => {
     try {
-        const { title, description, category, priority } = req.body;
+      const { title, description, category, priority } = req.body;
 
-        if (!title || !description || !category || !priority) {
-            return res.status(400).json({
-                success: false,
-                message: "All complaint fields are required"
-            });
-        }
+      if (!title || !description || !category || !priority) {
+        return res.status(400).json({
+          success: false,
+          message: "All complaint fields are required",
+        });
+      }
 
-        const userId = req.session.userId; //from session, protected route going through the middleware
-        const imagePath = req.file ? `uploads/${req.file.filename}` : null;
+      const userId = req.session.userId; //from session, protected route going through the middleware
+      const imagePath = req.file ? `uploads/${req.file.filename}` : null;
 
-        const [result] = await db.query(
-            `INSERT INTO Complaints
+      const [result] = await db.query(
+        `INSERT INTO Complaints
             (user_id, title, description, category, priority, status, image_path)
             VALUES (?, ?, ?, ?, ?, 'Pending', ?)`,
-            [userId, title, description, category, priority, imagePath]
-        );
+        [userId, title, description, category, priority, imagePath],
+      );
 
-        res.status(201).json({
-            success: true,
-            message: "Complaint created successfully",
-            complaintId: result.insertId
-        });
+      // Get the complainant's details
+      const [users] = await db.query(
+        "SELECT name, email FROM Users WHERE id = ?",
+        [userId],
+      );
 
+      // Send complaint acknowledgement email
+      if (users.length > 0) {
+        try {
+          await sendComplaintAcknowledgement(
+            {
+              id: result.insertId,
+              title,
+              category,
+              priority,
+            },
+            users[0],
+          );
+
+          console.log("Complaint acknowledgement email sent");
+        } catch (emailError) {
+          console.error("Email sending failed:", emailError);
+        }
+      }
+
+      res.status(201).json({
+        success: true,
+        message: "Complaint created successfully",
+        complaintId: result.insertId,
+      });
     } catch (error) {
         console.error(error);
 

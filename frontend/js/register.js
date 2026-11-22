@@ -21,6 +21,8 @@ registerForm.addEventListener("submit", async (event) => {
   const name = document.getElementById("name").value;
   const email = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value;
+  const role = document.getElementById("role").value.trim();
+  const department = document.getElementById("department").value.trim();
 
   // -------------------------------------------------
   // SEND register REQUEST
@@ -40,6 +42,8 @@ registerForm.addEventListener("submit", async (event) => {
         email: email,
         name: name,
         password: password,
+        role: role,
+        department: department
       }),
     });
 

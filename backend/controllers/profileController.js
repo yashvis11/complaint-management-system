@@ -1,11 +1,6 @@
-// =========================================================
-// PROFILE CONTROLLER
-// =========================================================
-
 const db = require("../config/db");
 
-// Supports either req.session.user.id or req.session.userId,
-// depending on what your login controller stores
+// Get the logged-in user's ID from the session
 function getSessionUserId(req) {
   return req.session.userId;
 }
@@ -26,7 +21,9 @@ exports.getProfile = async (req, res) => {
     }
 
     const [rows] = await db.query(
-      "SELECT id, name, email, role, created_at FROM users WHERE id = ?",
+      `SELECT id, name, email, role, department, created_at
+             FROM users
+             WHERE id = ?`,
       [userId],
     );
 
@@ -52,7 +49,7 @@ exports.getProfile = async (req, res) => {
 };
 
 // =========================================================
-// UPDATE LOGGED-IN USER'S PROFILE (name and email)
+// UPDATE LOGGED-IN USER'S PROFILE (NAME AND EMAIL)
 // =========================================================
 
 exports.updateProfile = async (req, res) => {
@@ -102,11 +99,14 @@ exports.updateProfile = async (req, res) => {
       userId,
     ]);
 
-    // Keep the session copy in sync if you store the user object there
+    // Keep the session copy in sync if it exists
     if (req.session.user) {
       req.session.user.name = name;
       req.session.user.email = email;
     }
+
+    // Also update the session's separate name value if present
+    req.session.name = name;
 
     res.json({
       success: true,
@@ -119,6 +119,44 @@ exports.updateProfile = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to update profile",
+    });
+  }
+};
+
+// =========================================================
+// GET APPROVED STAFF MEMBER'S PROFILE
+// =========================================================
+
+exports.getStaffProfile = async (req, res) => {
+  try {
+    const userId = getSessionUserId(req);
+
+    const [rows] = await db.query(
+      `SELECT id, name, email, department, created_at
+             FROM users
+             WHERE id = ?
+             AND role = 'staff'
+             AND is_verified = 1`,
+      [userId],
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Approved staff profile not found",
+      });
+    }
+
+    res.json({
+      success: true,
+      data: rows[0],
+    });
+  } catch (error) {
+    console.error("Get staff profile error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to load staff profile",
     });
   }
 };
