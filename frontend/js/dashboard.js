@@ -121,7 +121,7 @@ document.addEventListener("DOMContentLoaded", function () {
       // GET STATISTICS
       // ========================================================
 
-      const statsResponse = await fetch(  `http://localhost:3000/api/dashboard/stats${queryString}`,
+      const statsResponse = await fetch(  `https://complaint-management-system-o899.onrender.com/api/dashboard/stats${queryString}`,
       {
         credentials: "include"
       }
@@ -180,7 +180,7 @@ document.addEventListener("DOMContentLoaded", function () {
       // ========================================================
 
       const chartsResponse = await fetch(
-        `http://localhost:3000/api/dashboard/charts${queryString}`,
+        `https://complaint-management-system-o899.onrender.com/api/dashboard/charts${queryString}`,
         {
           credentials: "include",
         },
@@ -1012,7 +1012,7 @@ document.addEventListener("DOMContentLoaded", function () {
   // ============================================================
   async function showAdminLink() {
     try {
-      const response = await fetch("http://localhost:3000/api/profile", {
+      const response = await fetch("https://complaint-management-system-o899.onrender.com/api/profile", {
         credentials: "include",
       });
       const result = await response.json();

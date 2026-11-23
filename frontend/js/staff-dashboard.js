@@ -1,4 +1,4 @@
-const API_BASE = "http://localhost:3000";
+const API_BASE = "https://complaint-management-system-o899.onrender.com";
 
 document.addEventListener("DOMContentLoaded", () => {
   const profileUrl = `${API_BASE}/api/profile/staff`;

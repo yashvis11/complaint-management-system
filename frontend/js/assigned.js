@@ -2,7 +2,7 @@
 // ASSIGNED TO ME PAGE JAVASCRIPT (STAFF)
 // =========================================================
 
-const API_BASE_URL = "http://localhost:3000";
+const API_BASE_URL = "https://complaint-management-system-o899.onrender.com";
 
 const assignedRows = document.getElementById("assignedRows");
 const errorMessage = document.getElementById("errorMessage");

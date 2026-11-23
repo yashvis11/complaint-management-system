@@ -3,7 +3,7 @@
 // LOGIN PAGE JAVASCRIPT
 // =========================================================
 
-const API_BASE_URL = "http://localhost:3000";
+const API_BASE_URL = "https://complaint-management-system-o899.onrender.com";
 
 const loginForm = document.getElementById("loginForm");
 const loginMessage = document.getElementById("loginMessage");

@@ -2,7 +2,7 @@
 // ADMIN PANEL JAVASCRIPT
 // =========================================================
 
-const API_BASE_URL = "http://localhost:3000";
+const API_BASE_URL = "https://complaint-management-system-o899.onrender.com";
 
 const errorMessage = document.getElementById("errorMessage");
 const successMessage = document.getElementById("successMessage");

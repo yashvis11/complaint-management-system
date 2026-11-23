@@ -15,6 +15,7 @@ const adminRoutes = require("./routes/adminRoutes");
 const session = require("express-session");
 
 const app = express();
+app.set("trust proxy", 1);
 
 const isProduction = process.env.NODE_ENV === "production";
 
@@ -41,9 +42,10 @@ app.use(
         saveUninitialized: false,
         cookie: {
             maxAge: 1000 * 60 * 60,
-            secure: isProduction,
-            sameSite: isProduction ? "none" : "lax",
             httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite:
+                process.env.NODE_ENV === "production" ? "none" : "lax",
         },
     })
 );
