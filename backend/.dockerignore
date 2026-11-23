@@ -2,3 +2,4 @@ node_modules
 uploads
 .env
 .git
+npm-debug.log

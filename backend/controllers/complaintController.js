@@ -1,7 +1,73 @@
+
 const db = require("../config/db");
 const fs = require("fs");
 const path = require("path");
+const { v2: cloudinary } = require("cloudinary");
 const { sendComplaintAcknowledgement } = require("../utils/emailService");
+
+// Load backend environment variables
+require("dotenv").config({
+  path: path.join(__dirname, "..", ".env"),
+});
+
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+// =========================================================
+// DELETE IMAGE FROM ITS STORAGE LOCATION
+// =========================================================
+
+const deleteComplaintImage = async (imagePath, publicId) => {
+  if (!imagePath) return;
+
+  try {
+    // Cloudinary image
+    if (publicId) {
+      await cloudinary.uploader.destroy(publicId);
+      return;
+    }
+
+    // Local image
+    if (!imagePath.startsWith("http")) {
+      const localPath = path.join(__dirname, "..", imagePath);
+
+      if (fs.existsSync(localPath)) {
+        fs.unlinkSync(localPath);
+      }
+    }
+  } catch (error) {
+    console.error("Image deletion failed:", error);
+  }
+};
+
+// =========================================================
+// GET IMAGE DETAILS FROM MULTER
+// =========================================================
+
+const getUploadedImageDetails = (file) => {
+  if (!file) {
+    return {
+      imagePath: null,
+      imagePublicId: null,
+    };
+  }
+
+  if (process.env.STORAGE_TYPE === "cloudinary") {
+    return {
+      imagePath: file.path,
+      imagePublicId: file.filename,
+    };
+  }
+
+  return {
+    imagePath: `uploads/${file.filename}`,
+    imagePublicId: null,
+  };
+};
 
 // =========================================================
 // CREATE COMPLAINT
@@ -19,18 +85,29 @@ const createComplaint = async (req, res) => {
     }
 
     const userId = req.session.userId;
-    const imagePath = req.file ? `uploads/${req.file.filename}` : null;
+
+    const { imagePath, imagePublicId } =
+      getUploadedImageDetails(req.file);
 
     const [result] = await db.query(
       `INSERT INTO complaints
-            (user_id, title, description, category, priority, status, image_path)
-            VALUES (?, ?, ?, ?, ?, 'Pending', ?)`,
-      [userId, title, description, category, priority, imagePath],
+       (user_id, title, description, category, priority, status,
+        image_path, image_public_id)
+       VALUES (?, ?, ?, ?, ?, 'Pending', ?, ?)`,
+      [
+        userId,
+        title,
+        description,
+        category,
+        priority,
+        imagePath,
+        imagePublicId,
+      ]
     );
 
     const [users] = await db.query(
       "SELECT name, email FROM users WHERE id = ?",
-      [userId],
+      [userId]
     );
 
     if (users.length > 0) {
@@ -42,7 +119,7 @@ const createComplaint = async (req, res) => {
             category,
             priority,
           },
-          users[0],
+          users[0]
         );
 
         console.log("Complaint acknowledgement email sent");
@@ -76,11 +153,11 @@ const getComplaints = async (req, res) => {
 
     const [complaints] = await db.query(
       `SELECT c.*, a.name AS assigned_name
-             FROM complaints c
-             LEFT JOIN users a ON a.id = c.assigned_to
-             WHERE c.user_id = ?
-             ORDER BY c.created_at DESC`,
-      [userId],
+       FROM complaints c
+       LEFT JOIN users a ON a.id = c.assigned_to
+       WHERE c.user_id = ?
+       ORDER BY c.created_at DESC`,
+      [userId]
     );
 
     return res.status(200).json({
@@ -108,10 +185,10 @@ const getComplaintById = async (req, res) => {
 
     const [complaints] = await db.query(
       `SELECT c.*, a.name AS assigned_name
-             FROM complaints c
-             LEFT JOIN users a ON a.id = c.assigned_to
-             WHERE c.id = ?`,
-      [complaintId],
+       FROM complaints c
+       LEFT JOIN users a ON a.id = c.assigned_to
+       WHERE c.id = ?`,
+      [complaintId]
     );
 
     if (complaints.length === 0) {
@@ -151,8 +228,6 @@ const updateComplaint = async (req, res) => {
     const complaintId = req.params.id;
     const userId = req.session.userId;
 
-    const newImagePath = req.file ? `uploads/${req.file.filename}` : null;
-
     const { title, description, category, priority } = req.body;
 
     if (!title || !description || !category || !priority) {
@@ -164,7 +239,7 @@ const updateComplaint = async (req, res) => {
 
     const [complaints] = await db.query(
       "SELECT * FROM complaints WHERE id = ?",
-      [complaintId],
+      [complaintId]
     );
 
     if (complaints.length === 0) {
@@ -190,16 +265,36 @@ const updateComplaint = async (req, res) => {
       });
     }
 
+    const { imagePath, imagePublicId } =
+      getUploadedImageDetails(req.file);
+
     await db.query(
       `UPDATE complaints
-             SET title = ?,
-                 description = ?,
-                 category = ?,
-                 priority = ?,
-                 image_path = COALESCE(?, image_path)
-             WHERE id = ?`,
-      [title, description, category, priority, newImagePath, complaintId],
+       SET title = ?,
+           description = ?,
+           category = ?,
+           priority = ?,
+           image_path = COALESCE(?, image_path),
+           image_public_id = COALESCE(?, image_public_id)
+       WHERE id = ?`,
+      [
+        title,
+        description,
+        category,
+        priority,
+        imagePath,
+        imagePublicId,
+        complaintId,
+      ]
     );
+
+    // Delete the previous image only after the database update succeeds
+    if (req.file && complaint.image_path) {
+      await deleteComplaintImage(
+        complaint.image_path,
+        complaint.image_public_id
+      );
+    }
 
     return res.status(200).json({
       success: true,
@@ -226,7 +321,7 @@ const deleteComplaint = async (req, res) => {
 
     const [complaints] = await db.query(
       "SELECT * FROM complaints WHERE id = ?",
-      [complaintId],
+      [complaintId]
     );
 
     if (complaints.length === 0) {
@@ -252,11 +347,15 @@ const deleteComplaint = async (req, res) => {
       });
     }
 
-    if (complaint.image_path) {
-      fs.unlink(path.join(__dirname, "..", complaint.image_path), () => {});
-    }
+    await db.query(
+      "DELETE FROM complaints WHERE id = ?",
+      [complaintId]
+    );
 
-    await db.query("DELETE FROM complaints WHERE id = ?", [complaintId]);
+    await deleteComplaintImage(
+      complaint.image_path,
+      complaint.image_public_id
+    );
 
     return res.status(200).json({
       success: true,
@@ -282,11 +381,11 @@ const getAssignedComplaints = async (req, res) => {
 
     const [complaints] = await db.query(
       `SELECT c.*, u.name AS user_name
-             FROM complaints c
-             JOIN users u ON u.id = c.user_id
-             WHERE c.assigned_to = ?
-             ORDER BY c.created_at DESC`,
-      [staffId],
+       FROM complaints c
+       JOIN users u ON u.id = c.user_id
+       WHERE c.assigned_to = ?
+       ORDER BY c.created_at DESC`,
+      [staffId]
     );
 
     return res.status(200).json({
@@ -312,12 +411,11 @@ const resolveAssignedComplaint = async (req, res) => {
     const complaintId = req.params.id;
     const staffId = req.session.userId;
 
-    // Find the complaint and verify its assignment
     const [complaints] = await db.query(
       `SELECT id, assigned_to, status
-             FROM complaints
-             WHERE id = ?`,
-      [complaintId],
+       FROM complaints
+       WHERE id = ?`,
+      [complaintId]
     );
 
     if (complaints.length === 0) {
@@ -329,7 +427,6 @@ const resolveAssignedComplaint = async (req, res) => {
 
     const complaint = complaints[0];
 
-    // Ensure this complaint belongs to the logged-in staff member
     if (Number(complaint.assigned_to) !== Number(staffId)) {
       return res.status(403).json({
         success: false,
@@ -344,7 +441,10 @@ const resolveAssignedComplaint = async (req, res) => {
       });
     }
 
-    if (complaint.status !== "Pending" && complaint.status !== "In Progress") {
+    if (
+      complaint.status !== "Pending" &&
+      complaint.status !== "In Progress"
+    ) {
       return res.status(400).json({
         success: false,
         message: "This complaint cannot be marked as resolved",
@@ -353,9 +453,9 @@ const resolveAssignedComplaint = async (req, res) => {
 
     await db.query(
       `UPDATE complaints
-             SET status = 'Resolved'
-             WHERE id = ? AND assigned_to = ?`,
-      [complaintId, staffId],
+       SET status = 'Resolved'
+       WHERE id = ? AND assigned_to = ?`,
+      [complaintId, staffId]
     );
 
     return res.status(200).json({

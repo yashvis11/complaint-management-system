@@ -1,10 +1,15 @@
+
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 const crypto = require("crypto");
+const { v2: cloudinary } = require("cloudinary");
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
 
-const uploadDir = path.join(__dirname, "..", "uploads");
-fs.mkdirSync(uploadDir, { recursive: true });
+// Load backend environment variables
+require("dotenv").config({
+  path: path.join(__dirname, "..", ".env"),
+});
 
 const ALLOWED = {
   "image/jpeg": ".jpg",
@@ -12,21 +17,57 @@ const ALLOWED = {
   "image/webp": ".webp",
 };
 
-const upload = multer({
-  storage: multer.diskStorage({
+let storage;
+
+if (process.env.STORAGE_TYPE === "cloudinary") {
+  // Configure Cloudinary
+  cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+  });
+
+  // Save images directly to Cloudinary
+  storage = new CloudinaryStorage({
+    cloudinary,
+    params: async (req, file) => ({
+      folder: "complaint-management-system",
+      allowed_formats: ["jpg", "png", "webp"],
+      public_id: crypto.randomBytes(16).toString("hex"),
+    }),
+  });
+} else {
+  // Keep the existing local storage functionality
+  const uploadDir = path.join(__dirname, "..", "uploads");
+
+  fs.mkdirSync(uploadDir, { recursive: true });
+
+  storage = multer.diskStorage({
     destination: uploadDir,
-    // Random name, so the user's filename is never trusted or reused
-    filename: (req, file, cb) =>
-      cb(null, crypto.randomBytes(16).toString("hex") + ALLOWED[file.mimetype]),
-  }),
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB
-  fileFilter: (req, file, cb) =>
-    ALLOWED[file.mimetype]
-      ? cb(null, true)
-      : cb(new Error("Only JPG, PNG or WebP images are allowed")),
+    filename: (req, file, cb) => {
+      cb(
+        null,
+        crypto.randomBytes(16).toString("hex") + ALLOWED[file.mimetype]
+      );
+    },
+  });
+}
+
+const upload = multer({
+  storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024,
+  },
+  fileFilter: (req, file, cb) => {
+    if (ALLOWED[file.mimetype]) {
+      cb(null, true);
+    } else {
+      cb(new Error("Only JPG, PNG or WebP images are allowed"));
+    }
+  },
 });
 
-// Wrapper so upload errors come back as JSON like your other errors
+// Return upload errors as JSON
 module.exports = function uploadImage(req, res, next) {
   upload.single("image")(req, res, (err) => {
     if (err) {
@@ -34,8 +75,13 @@ module.exports = function uploadImage(req, res, next) {
         err.code === "LIMIT_FILE_SIZE"
           ? "Image must be under 5 MB"
           : err.message;
-      return res.status(400).json({ success: false, message });
+
+      return res.status(400).json({
+        success: false,
+        message,
+      });
     }
+
     next();
   });
 };

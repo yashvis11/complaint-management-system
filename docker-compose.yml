@@ -1,9 +1,7 @@
-services:
 
+services:
   db:
     image: mysql:8.0
-    # Linux MySQL is case-sensitive about table names; this makes
-    # Complaints / complaints / Users / users all work like on Windows.
     command: --lower-case-table-names=1
     restart: unless-stopped
     environment:
@@ -11,7 +9,7 @@ services:
       MYSQL_DATABASE: ${DB_NAME}
     volumes:
       - db_data:/var/lib/mysql
-      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - ./db/complaint_system_file.sql:/docker-entrypoint-initdb.d/complaint_system_file.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD"]
       interval: 5s
@@ -27,15 +25,23 @@ services:
     environment:
       PORT: 3000
       DB_HOST: db
+      DB_PORT: 3306
       DB_USER: root
       DB_PASSWORD: ${DB_PASSWORD}
       DB_NAME: ${DB_NAME}
       SESSION_SECRET: ${SESSION_SECRET}
       FRONTEND_ORIGIN: http://localhost:5500
+      EMAIL_USER: ${EMAIL_USER}
+      EMAIL_PASS: ${EMAIL_PASS}
+
+      STORAGE_TYPE: cloudinary
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET}
     ports:
       - "3000:3000"
     volumes:
-      - uploads_data:/app/uploads   # uploaded complaint photos survive restarts
+      - uploads_data:/app/uploads
 
   frontend:
     build: ./frontend

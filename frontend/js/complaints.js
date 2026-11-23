@@ -1,3 +1,4 @@
+
 // =========================================================
 // COMPLAINTS PAGE JAVASCRIPT
 // =========================================================
@@ -24,30 +25,17 @@ async function loadComplaints() {
 
         const result = await response.json();
 
-
-
         console.log("Complaints API:", result);
 
-
         if (!response.ok || !result.success) {
-
             throw new Error(
-                result.message ||
-                "Failed to load complaints"
+                result.message || "Failed to load complaints"
             );
-
         }
-
-
-        // Your backend currently returns:
-        // { success: true, complaints: [...] }
 
         const complaints = result.complaints;
 
-
-        // -------------------------------------------------
         // NO COMPLAINTS
-        // -------------------------------------------------
 
         if (!complaints || complaints.length === 0) {
 
@@ -63,17 +51,11 @@ async function loadComplaints() {
             return;
         }
 
-
-        // -------------------------------------------------
         // CLEAR TABLE
-        // -------------------------------------------------
 
         tableBody.innerHTML = "";
 
-
-        // -------------------------------------------------
         // CREATE ROW FOR EACH COMPLAINT
-        // -------------------------------------------------
 
         complaints.forEach(complaint => {
 
@@ -82,9 +64,7 @@ async function loadComplaints() {
             row.innerHTML = `
 
                 <td>
-                    <strong>
-                        #${complaint.id}
-                    </strong>
+                    <strong>#${complaint.id}</strong>
                 </td>
 
                 <td>
@@ -115,16 +95,23 @@ async function loadComplaints() {
                     <div class="d-flex gap-2">
 
                         <a
-                            href="complaint-details.html?id=${complaint.id}"
+                            href="complaint-details.html?id=${encodeURIComponent(complaint.id)}"
                             class="btn btn-sm btn-outline-primary">
                             View
                         </a>
 
                         <a
-                            href="edit-complaint.html?id=${complaint.id}"
+                            href="edit-complaint.html?id=${encodeURIComponent(complaint.id)}"
                             class="btn btn-sm btn-outline-warning">
                             Edit
                         </a>
+
+                        <button
+                            type="button"
+                            class="btn btn-sm btn-outline-danger delete-complaint-btn"
+                            data-id="${escapeHtml(complaint.id)}">
+                            Delete
+                        </button>
 
                     </div>
                 </td>
@@ -135,28 +122,17 @@ async function loadComplaints() {
 
         });
 
-
     } catch (error) {
 
-        console.error(
-            "Error loading complaints:",
-            error
-        );
+        console.error("Error loading complaints:", error);
 
         tableBody.innerHTML = `
-
             <tr>
-
-                <td
-                    colspan="7"
+                <td colspan="7"
                     class="text-center text-danger py-5">
-
                     Failed to load complaints.
-
                 </td>
-
             </tr>
-
         `;
 
     }
@@ -165,18 +141,91 @@ async function loadComplaints() {
 
 
 // =========================================================
+// DELETE COMPLAINT
+// =========================================================
+
+async function deleteComplaint(complaintId, button) {
+
+    const confirmDelete = confirm(
+        "Are you sure you want to delete this complaint? This action cannot be undone."
+    );
+
+    if (!confirmDelete) {
+        return;
+    }
+
+    try {
+
+        button.disabled = true;
+        button.textContent = "Deleting...";
+
+        const response = await fetch(
+            `${API_BASE_URL}/api/complaints/${encodeURIComponent(complaintId)}`,
+            {
+                method: "DELETE",
+                credentials: "include"
+            }
+        );
+
+        const result = await response.json();
+
+        console.log("Delete Complaint API:", result);
+
+        if (!response.ok || !result.success) {
+
+            throw new Error(
+                result.message || "Failed to delete complaint"
+            );
+
+        }
+
+        alert("Complaint deleted successfully!");
+
+        // Reload the complaints table
+
+        loadComplaints();
+
+    } catch (error) {
+
+        console.error("Error deleting complaint:", error);
+
+        alert(error.message || "Unable to delete complaint.");
+
+        button.disabled = false;
+        button.textContent = "Delete";
+
+    }
+
+}
+
+
+// =========================================================
+// DELETE BUTTON EVENT LISTENER
+// =========================================================
+
+tableBody.addEventListener("click", function(event) {
+
+    const button = event.target.closest(".delete-complaint-btn");
+
+    if (!button) {
+        return;
+    }
+
+    const complaintId = button.dataset.id;
+
+    deleteComplaint(complaintId, button);
+
+});
+
+
+// =========================================================
 // ESCAPE HTML
 // =========================================================
 
 function escapeHtml(value) {
 
-    if (
-        value === null ||
-        value === undefined
-    ) {
-
+    if (value === null || value === undefined) {
         return "";
-
     }
 
     return String(value)
@@ -249,17 +298,13 @@ function getStatusClass(status) {
 function formatDate(dateValue) {
 
     if (!dateValue) {
-
         return "-";
-
     }
 
     const date = new Date(dateValue);
 
     if (Number.isNaN(date.getTime())) {
-
         return "-";
-
     }
 
     return date.toLocaleDateString("en-GB");
