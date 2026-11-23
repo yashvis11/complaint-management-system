@@ -16,8 +16,14 @@ const session = require("express-session");
 
 const app = express();
 
-// Allow the frontend URL specified in the environment.
-// Defaults to Vite's URL when running locally.
+const isProduction = process.env.NODE_ENV === "production";
+
+// Trust Render's reverse proxy for secure cookies
+if (isProduction) {
+    app.set("trust proxy", 1);
+}
+
+// CORS configuration
 app.use(
     cors({
         origin: process.env.FRONTEND_ORIGIN || "http://localhost:5173",
@@ -27,6 +33,7 @@ app.use(
 
 app.use(express.json());
 
+// Session configuration
 app.use(
     session({
         secret: process.env.SESSION_SECRET,
@@ -34,8 +41,9 @@ app.use(
         saveUninitialized: false,
         cookie: {
             maxAge: 1000 * 60 * 60,
-            secure: false,
-            sameSite: "lax",
+            secure: isProduction,
+            sameSite: isProduction ? "none" : "lax",
+            httpOnly: true,
         },
     })
 );
