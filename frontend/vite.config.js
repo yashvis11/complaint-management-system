@@ -1,3 +1,4 @@
+
 import { defineConfig } from "vite";
 import { resolve } from "path";
 
@@ -7,6 +8,7 @@ export default defineConfig({
   build: {
     rollupOptions: {
       input: {
+        home: resolve(__dirname, "index.html"),
         login: resolve(__dirname, "pages/login.html"),
         register: resolve(__dirname, "pages/register.html"),
         dashboard: resolve(__dirname, "pages/dashboard.html"),

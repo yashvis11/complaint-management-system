@@ -1,0 +1,319 @@
+
+// =========================================================
+// COMPLAINTS PAGE JAVASCRIPT
+// =========================================================
+
+const API_BASE_URL = "https://complaint-management-system-o899.onrender.com";
+
+const tableBody = document.getElementById("complaintsTableBody");
+
+
+// =========================================================
+// LOAD ALL COMPLAINTS
+// =========================================================
+
+async function loadComplaints() {
+
+    try {
+
+        const response = await fetch(
+            `${API_BASE_URL}/api/complaints`,
+            {
+                credentials: "include"
+            }
+        );
+
+        const result = await response.json();
+
+        console.log("Complaints API:", result);
+
+        if (!response.ok || !result.success) {
+            throw new Error(
+                result.message || "Failed to load complaints"
+            );
+        }
+
+        const complaints = result.complaints;
+
+        // NO COMPLAINTS
+
+        if (!complaints || complaints.length === 0) {
+
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="7"
+                        class="text-center text-muted py-5">
+                        No complaints found.
+                    </td>
+                </tr>
+            `;
+
+            return;
+        }
+
+        // CLEAR TABLE
+
+        tableBody.innerHTML = "";
+
+        // CREATE ROW FOR EACH COMPLAINT
+
+        complaints.forEach(complaint => {
+
+            const row = document.createElement("tr");
+
+            row.innerHTML = `
+
+                <td>
+                    <strong>#${complaint.id}</strong>
+                </td>
+
+                <td>
+                    ${escapeHtml(complaint.title)}
+                </td>
+
+                <td>
+                    ${escapeHtml(complaint.category)}
+                </td>
+
+                <td>
+                    <span class="badge ${getPriorityClass(complaint.priority)}">
+                        ${escapeHtml(complaint.priority)}
+                    </span>
+                </td>
+
+                <td>
+                    <span class="badge ${getStatusClass(complaint.status)}">
+                        ${escapeHtml(complaint.status)}
+                    </span>
+                </td>
+
+                <td>
+                    ${formatDate(complaint.created_at)}
+                </td>
+
+                <td>
+                    <div class="d-flex gap-2">
+
+                        <a
+                            href="complaint-details.html?id=${encodeURIComponent(complaint.id)}"
+                            class="btn btn-sm btn-outline-primary">
+                            View
+                        </a>
+
+                        <a
+                            href="edit-complaint.html?id=${encodeURIComponent(complaint.id)}"
+                            class="btn btn-sm btn-outline-warning">
+                            Edit
+                        </a>
+
+                        <button
+                            type="button"
+                            class="btn btn-sm btn-outline-danger delete-complaint-btn"
+                            data-id="${escapeHtml(complaint.id)}">
+                            Delete
+                        </button>
+
+                    </div>
+                </td>
+
+            `;
+
+            tableBody.appendChild(row);
+
+        });
+
+    } catch (error) {
+
+        console.error("Error loading complaints:", error);
+
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="7"
+                    class="text-center text-danger py-5">
+                    Failed to load complaints.
+                </td>
+            </tr>
+        `;
+
+    }
+
+}
+
+
+// =========================================================
+// DELETE COMPLAINT
+// =========================================================
+
+async function deleteComplaint(complaintId, button) {
+
+    const confirmDelete = confirm(
+        "Are you sure you want to delete this complaint? This action cannot be undone."
+    );
+
+    if (!confirmDelete) {
+        return;
+    }
+
+    try {
+
+        button.disabled = true;
+        button.textContent = "Deleting...";
+
+        const response = await fetch(
+            `${API_BASE_URL}/api/complaints/${encodeURIComponent(complaintId)}`,
+            {
+                method: "DELETE",
+                credentials: "include"
+            }
+        );
+
+        const result = await response.json();
+
+        console.log("Delete Complaint API:", result);
+
+        if (!response.ok || !result.success) {
+
+            throw new Error(
+                result.message || "Failed to delete complaint"
+            );
+
+        }
+
+        alert("Complaint deleted successfully!");
+
+        // Reload the complaints table
+
+        loadComplaints();
+
+    } catch (error) {
+
+        console.error("Error deleting complaint:", error);
+
+        alert(error.message || "Unable to delete complaint.");
+
+        button.disabled = false;
+        button.textContent = "Delete";
+
+    }
+
+}
+
+
+// =========================================================
+// DELETE BUTTON EVENT LISTENER
+// =========================================================
+
+tableBody.addEventListener("click", function(event) {
+
+    const button = event.target.closest(".delete-complaint-btn");
+
+    if (!button) {
+        return;
+    }
+
+    const complaintId = button.dataset.id;
+
+    deleteComplaint(complaintId, button);
+
+});
+
+
+// =========================================================
+// ESCAPE HTML
+// =========================================================
+
+function escapeHtml(value) {
+
+    if (value === null || value === undefined) {
+        return "";
+    }
+
+    return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
+}
+
+
+// =========================================================
+// PRIORITY BADGE
+// =========================================================
+
+function getPriorityClass(priority) {
+
+    switch (priority) {
+
+        case "High":
+            return "bg-danger";
+
+        case "Medium":
+            return "bg-warning text-dark";
+
+        case "Low":
+            return "bg-success";
+
+        default:
+            return "bg-secondary";
+
+    }
+
+}
+
+
+// =========================================================
+// STATUS BADGE
+// =========================================================
+
+function getStatusClass(status) {
+
+    switch (status) {
+
+        case "Pending":
+            return "bg-warning text-dark";
+
+        case "In Progress":
+            return "bg-info text-dark";
+
+        case "Resolved":
+            return "bg-success";
+
+        case "Rejected":
+            return "bg-danger";
+
+        default:
+            return "bg-secondary";
+
+    }
+
+}
+
+
+// =========================================================
+// FORMAT DATE
+// =========================================================
+
+function formatDate(dateValue) {
+
+    if (!dateValue) {
+        return "-";
+    }
+
+    const date = new Date(dateValue);
+
+    if (Number.isNaN(date.getTime())) {
+        return "-";
+    }
+
+    return date.toLocaleDateString("en-GB");
+
+}
+
+
+// =========================================================
+// START
+// =========================================================
+
+loadComplaints();
